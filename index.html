@@ -1,236 +1,603 @@
-import React, { useState } from "react";
-import {
-  User,
-  Building2,
-  MapPin,
-  Briefcase,
-  Target,
-  CheckCircle2,
-  AlertTriangle,
-  MessageCircle,
-  BarChart3,
-  Globe,
-  Copy,
-  Send,
-  CalendarCheck
-} from "lucide-react";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>MTI | IQL Brasil – Thiago Lizardo (Einstein)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-/* ---------------- COMPONENTES REUTILIZABLES ---------------- */
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --card:#ffffff;
+      --border:#e2e8f0;
+      --text:#0f172a;
+      --muted:#64748b;
 
-const ICPBar = ({ label, value, color }) => (
-  <div className="mb-3">
-    <div className="flex justify-between text-xs font-semibold text-slate-500 uppercase mb-1">
-      <span>{label}</span>
-      <span>{value}/10</span>
-    </div>
-    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-      <div
-        className={`h-full ${color}`}
-        style={{ width: `${value * 10}%` }}
-      />
-    </div>
-  </div>
-);
+      --teal:#0f766e;
+      --teal2:#115e59;
+      --tealSoft:#f0fdfa;
 
-const BilingualBlock = ({ title, recommended, pt, es }) => (
-  <div
-    className={`border-2 rounded-2xl mb-8 overflow-hidden ${
-      recommended ? "border-teal-500" : "border-slate-200"
-    }`}
-  >
-    {/* HEADER */}
-    <div
-      className={`flex justify-between items-center px-5 py-3 border-b ${
-        recommended ? "bg-teal-50" : "bg-slate-50"
-      }`}
-    >
-      <h4 className="font-bold text-slate-800">{title}</h4>
-      {recommended && (
-        <span className="bg-teal-600 text-white text-xs px-3 py-1 rounded-full font-bold">
-          RECOMENDADA
-        </span>
-      )}
-    </div>
+      --orange:#f97316;
+      --orangeSoft:#fff7ed;
 
-    {/* CONTENT */}
-    <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x">
-      {/* PT */}
-      <div className="p-5 bg-white">
-        <div className="flex justify-between items-center mb-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-teal-700 uppercase">
-            <Globe className="w-4 h-4" />
-            Português (Enviar)
-          </div>
-          <button
-            onClick={() => navigator.clipboard.writeText(pt)}
-            className="flex items-center gap-1 text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded"
-          >
-            <Copy className="w-3 h-3" />
-            Copiar
-          </button>
-        </div>
-        <div className="text-sm font-mono text-slate-700 bg-slate-50 p-4 rounded border whitespace-pre-line">
-          {pt}
-        </div>
+      --green:#16a34a;
+      --greenSoft:#f0fdf4;
+
+      --shadow: 0 1px 3px rgba(15,23,42,.08);
+      --radius: 16px;
+      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      --sans: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}
+    .wrap{max-width:1120px;margin:0 auto;padding:18px}
+    .shadow{box-shadow:var(--shadow)}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius)}
+    .muted{color:var(--muted)}
+    .mono{font-family:var(--mono)}
+
+    /* HEADER */
+    .header{
+      color:#fff;
+      background: linear-gradient(90deg, #064e3b 0%, #0f766e 45%, #0f172a 100%);
+      padding:22px 18px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      position:relative;
+      overflow:hidden;
+    }
+    .header-inner{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;
+      font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+      background: rgba(13,148,136,.20);
+      border: 1px solid rgba(45,212,191,.25);
+      color:#ccfbf1;
+      width:max-content;
+    }
+    .h1{margin:6px 0 0;font-size:30px;line-height:1.1;font-weight:900}
+    .sub{margin:6px 0 0;color:#ccfbf1;font-weight:500;font-size:14px}
+
+    .right-head{display:flex;align-items:center;gap:14px}
+    .logo{
+      height:80px;
+      width:auto;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,.25));
+    }
+    .statusbox{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:6px;
+      min-width:220px;
+    }
+    .smallmuted{font-size:12px;color:#99f6e4;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+    .statusbadge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:12px;
+      font-weight:900;
+      background: var(--green);
+      box-shadow: 0 8px 18px rgba(22,163,74,.22);
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .statusbadge .dot{
+      width:10px;height:10px;border-radius:999px;background:#86efac;display:inline-block;
+      box-shadow:0 0 0 4px rgba(134,239,172,.18);
+    }
+    .head-meta{font-size:12px;color:#ccfbf1;font-weight:700}
+
+    /* LAYOUT */
+    main{margin-top:-14px}
+    .grid{display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:1024px){.grid{grid-template-columns: 360px 1fr}}
+    .side{display:flex;flex-direction:column;gap:14px}
+    .section{padding:16px}
+    .sec-title{
+      display:flex;align-items:center;gap:8px;
+      font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;
+      color:#94a3b8;margin-bottom:12px
+    }
+
+    /* PROFILE */
+    .profile{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+    .avatar{
+      width:56px;height:56px;border-radius:999px;
+      background:#f1f5f9;border:2px solid #e2e8f0;
+      display:grid;place-items:center;
+      color:#cbd5e1;font-weight:900;font-size:18px
+    }
+    .name{font-size:18px;font-weight:900;margin:0}
+    .role{font-size:13px;font-weight:900;color:var(--teal);margin-top:2px}
+    .tenure{font-size:12px;color:var(--muted);margin-top:2px;font-weight:700}
+    .kv{display:flex;gap:10px;align-items:center;color:#475569;font-size:13px;margin:8px 0}
+    .kv strong{font-weight:900}
+
+    /* ICP */
+    .icpbar{margin-bottom:10px}
+    .icphead{
+      display:flex;justify-content:space-between;
+      font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;
+      color:#64748b;margin-bottom:6px
+    }
+    .barbg{height:8px;background:#f1f5f9;border-radius:999px;overflow:hidden}
+    .barfill{height:100%;border-radius:999px}
+    .note{
+      margin-top:10px;padding:10px;border-radius:12px;
+      background: var(--tealSoft);
+      border:1px solid #ccfbf1;
+      color:#134e4a;font-size:12px;line-height:1.45
+    }
+
+    /* TABS */
+    .tabs-wrap{padding:0}
+    .tabs{
+      display:inline-flex;gap:6px;
+      padding:6px;border-radius:14px;border:1px solid var(--border);
+      background:#fff;
+    }
+    .tabbtn{
+      border:0;cursor:pointer;
+      padding:10px 14px;border-radius:12px;
+      font-weight:900;font-size:13px;color:#64748b;background:transparent;
+      transition: all .15s ease;
+      white-space:nowrap;
+    }
+    .tabbtn:hover{background:#f8fafc}
+    .tabbtn.active{background:var(--teal);color:#fff;box-shadow:var(--shadow)}
+    .tabbtn.orange.active{background:var(--orange)}
+    .panel{display:none}
+    .panel.active{display:block}
+
+    /* DIAG */
+    .diaggrid{display:grid;gap:14px}
+    @media(min-width:768px){.diaggrid{grid-template-columns:1fr 1fr}}
+    .good{border-top:4px solid #14b8a6}
+    .bad{border-top:4px solid var(--orange)}
+    .box{padding:16px}
+    .boxtitle{
+      margin:0 0 10px;
+      font-size:14px;
+      font-weight:900;
+      display:flex;align-items:center;gap:8px;
+      background:none;border:none;padding:0;
+    }
+    .boxtitle.good{color:#0f766e}
+    .boxtitle.bad{color:#9a3412}
+    ul{margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.5}
+    .conclusion{
+      margin-top:14px;padding:16px;border-radius:14px;
+      background:#f1f5f9;border:1px solid var(--border);
+      color:#475569;font-size:13px;line-height:1.55
+    }
+    .conclusion h3{margin:0 0 6px;font-size:14px;font-weight:900;color:#0f172a}
+
+    /* TIMELINE */
+    .timeline{padding:18px}
+    .titem{position:relative;padding-left:18px;margin:14px 0}
+    .titem:before{
+      content:"";position:absolute;left:0;top:6px;width:10px;height:10px;border-radius:999px;
+      background:#fff;border:2px solid #cbd5e1
+    }
+    .tdate{font-family:var(--mono);font-size:12px;color:#94a3b8;margin-bottom:6px}
+    .tbox{
+      padding:12px;border-radius:14px;border:1px solid var(--border);
+      background:#fff;color:#475569;font-size:13px;line-height:1.5
+    }
+    .tbox strong{display:block;margin-bottom:4px;color:#0f172a}
+    .tbox.warn{background:var(--orangeSoft);border-color:#fed7aa}
+    .tbox.ok{background:var(--tealSoft);border-color:#ccfbf1}
+
+    /* ACTION PLAN (igual estilo “GPA” con dos idiomas + copiar + íconos) */
+    .action-top{
+      background: var(--orangeSoft);
+      border:1px solid #fed7aa;
+      border-radius: var(--radius);
+      padding:16px;
+      margin-bottom:14px;
+    }
+    .action-top h3{margin:0 0 6px;font-size:16px;font-weight:900;color:#7c2d12;display:flex;align-items:center;gap:10px}
+    .action-top p{margin:0;color:#9a3412;font-weight:700;font-size:13px}
+
+    .msg{
+      border:2px solid var(--border);
+      border-radius:16px;
+      overflow:hidden;
+      margin-bottom:14px;
+      background:#fff;
+    }
+    .msg.reco{border-color:#14b8a6}
+    .msghead{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:10px 12px;border-bottom:1px solid var(--border);
+      background:#f8fafc;
+    }
+    .msg.reco .msghead{background:var(--tealSoft)}
+    .msgtitle{font-weight:900;color:#0f172a;font-size:13px}
+    .tag{
+      font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;
+      padding:4px 8px;border-radius:999px;color:#fff;background:var(--teal)
+    }
+    .msggrid{display:grid;grid-template-columns:1fr;gap:0}
+    @media(min-width:900px){.msggrid{grid-template-columns:1fr 1fr}}
+    .cell{padding:12px}
+    .cell.pt{background:#fff}
+    .cell.es{background:rgba(248,250,252,.8)}
+    .celltop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .label{
+      font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;
+      color:var(--teal);
+      display:flex;align-items:center;gap:8px
+    }
+    .label.es{color:#94a3b8}
+    .copybtn{
+      font-size:11px;font-weight:900;border:0;cursor:pointer;
+      padding:7px 10px;border-radius:10px;
+      background:#f1f5f9;color:#475569;
+      display:flex;align-items:center;gap:8px;
+    }
+    .copybtn:hover{background:#e2e8f0}
+    .code{
+      font-family:var(--mono);
+      font-size:12.5px;line-height:1.55;
+      background:#f8fafc;border:1px solid #e2e8f0;
+      padding:10px;border-radius:12px;color:#334155;
+      white-space:pre-line;
+    }
+    .esref{
+      font-size:12.5px;line-height:1.55;color:#64748b;
+      white-space:pre-line;font-style:italic;
+    }
+
+    .toast{
+      position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+      background:#0f172a;color:#fff;padding:10px 12px;border-radius:12px;
+      font-weight:800;font-size:12px;opacity:0;pointer-events:none;
+      transition:opacity .18s ease;
+      z-index:9999;
+    }
+    .toast.show{opacity:1}
+
+    /* Small helpers */
+    .icon{
+      width:14px;height:14px;display:inline-grid;place-items:center;
+      border-radius:6px;background:#e2e8f0;color:#334155;
+      font-size:11px;line-height:1;
+    }
+    .icon.teal{background:#ccfbf1;color:#0f766e}
+    .icon.orange{background:#ffedd5;color:#9a3412}
+    .icon.green{background:#dcfce7;color:#166534}
+  </style>
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header class="header shadow">
+    <div class="wrap header-inner">
+      <div>
+        <div class="pill">Salud / Healthcare</div>
+        <div class="h1">Análisis IQL: Hospital Einstein</div>
+        <div class="sub">Caso: Thiago Lizardo | Cierre diferido por timing</div>
       </div>
 
-      {/* ES */}
-      <div className="p-5 bg-slate-50">
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase mb-3">
-          <MessageCircle className="w-4 h-4" />
-          Español (ref)
-        </div>
-        <div className="text-sm text-slate-500 italic whitespace-pre-line">
-          {es}
+      <div class="right-head">
+        <!-- Cambia el archivo si tu logo tiene otro nombre -->
+        <img class="logo" src="mti-logo.png" alt="MTI Selling" />
+        <div class="statusbox">
+          <div class="smallmuted">Estado actual</div>
+          <div class="statusbadge"><span class="dot"></span> IQL ACTIVO / DIFERIDO</div>
+          <div class="head-meta">Ult. interacción: 10 Dic</div>
         </div>
       </div>
     </div>
-  </div>
-);
+  </header>
 
-/* ---------------- APP ---------------- */
+  <main class="wrap">
+    <div class="grid">
+      <!-- LEFT -->
+      <aside class="side">
+        <!-- PERFIL -->
+        <section class="card section shadow">
+          <div class="sec-title"><span class="icon teal">👤</span> Perfil del lead</div>
 
-export default function App() {
-  const [tab, setTab] = useState("plan");
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-
-      {/* HEADER */}
-      <header className="bg-gradient-to-r from-teal-900 to-slate-900 text-white px-6 py-8">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <div>
-            <span className="text-xs bg-teal-700 px-3 py-1 rounded-full font-bold uppercase">
-              Salud / Healthcare
-            </span>
-            <h1 className="text-3xl font-black mt-2">
-              Análisis IQL: Hospital Einstein
-            </h1>
-            <p className="text-teal-100 mt-1">
-              Caso: Thiago Lizardo | Cierre diferido por timing
-            </p>
+          <div class="profile">
+            <div class="avatar">TL</div>
+            <div>
+              <p class="name">Thiago Lizardo</p>
+              <div class="role">Coordenador de Growth Marketing</div>
+              <div class="tenure">Hospital Israelita Albert Einstein</div>
+            </div>
           </div>
 
-          <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-bold flex items-center gap-2">
-            <CalendarCheck className="w-4 h-4" />
-            IQL ACTIVO / DIFERIDO
+          <div class="kv">🏢 <strong>Hospital Einstein</strong></div>
+          <div class="kv">📍 São Paulo, Brasil</div>
+          <div class="kv">📈 Growth / CRM / Performance</div>
+        </section>
+
+        <!-- ✅ ICP (esto es lo que te faltaba en móvil cuando no se veía) -->
+        <section class="card section shadow">
+          <div class="sec-title"><span class="icon teal">🎯</span> Alineación con ICP</div>
+
+          <div class="icpbar">
+            <div class="icphead"><span>Industria (Salud)</span><span>10/10</span></div>
+            <div class="barbg"><div class="barfill" style="width:100%;background:#14b8a6;"></div></div>
           </div>
-        </div>
-      </header>
 
-      {/* CONTENT */}
-      <main className="max-w-6xl mx-auto px-6 -mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="icpbar">
+            <div class="icphead"><span>Empresa (Enterprise)</span><span>10/10</span></div>
+            <div class="barbg"><div class="barfill" style="width:100%;background:#14b8a6;"></div></div>
+          </div>
 
-        {/* LEFT */}
-        <div className="space-y-6">
-          <section className="bg-white p-6 rounded-2xl border">
-            <h3 className="text-xs font-bold text-slate-400 uppercase mb-4">
-              Perfil del Lead
-            </h3>
-            <h2 className="text-xl font-bold">Thiago Lizardo</h2>
-            <p className="text-teal-600 font-semibold">
-              Coord. Growth Marketing
-            </p>
-            <p className="text-sm text-slate-500 mb-4">
-              Hospital Albert Einstein
-            </p>
+          <div class="icpbar">
+            <div class="icphead"><span>Rol (Growth/Performance)</span><span>9/10</span></div>
+            <div class="barbg"><div class="barfill" style="width:90%;background:#0f766e;"></div></div>
+          </div>
 
-            <div className="space-y-2 text-sm text-slate-600">
-              <div className="flex gap-2">
-                <MapPin className="w-4 h-4" /> Brasil
-              </div>
-              <div className="flex gap-2">
-                <Building2 className="w-4 h-4" /> Salud / Healthcare
-              </div>
-              <div className="flex gap-2">
-                <Briefcase className="w-4 h-4" /> Growth / Performance
-              </div>
-            </div>
-          </section>
+          <div class="icpbar">
+            <div class="icphead"><span>Interés / Timing (Enero)</span><span>10/10</span></div>
+            <div class="barbg"><div class="barfill" style="width:100%;background:#16a34a;"></div></div>
+          </div>
 
-          <section className="bg-white p-6 rounded-2xl border">
-            <h3 className="text-xs font-bold text-slate-400 uppercase mb-4">
-              Alineación con ICP
-            </h3>
-            <ICPBar label="Industria" value={10} color="bg-teal-500" />
-            <ICPBar label="Rol" value={9} color="bg-teal-500" />
-            <ICPBar label="Interés" value={10} color="bg-green-500" />
-            <ICPBar label="Timing" value={10} color="bg-green-500" />
+          <div class="note">
+            <strong>Análisis:</strong> Interés explícito + timing definido por el lead. No es rechazo: es “retomemos en enero”.
+            Es un IQL activo diferido, ideal para retoma post-fiestas.
+          </div>
+        </section>
+      </aside>
 
-            <div className="mt-4 bg-teal-50 p-3 rounded text-xs text-teal-900">
-              <strong>Análisis:</strong> Interés explícito y timing definido
-              por el lead. Retoma clara en enero.
-            </div>
-          </section>
+      <!-- RIGHT -->
+      <section class="tabs-wrap">
+        <div class="tabs shadow">
+          <button class="tabbtn active" data-tab="diag">Diagnóstico</button>
+          <button class="tabbtn" data-tab="time">Timeline</button>
+          <button class="tabbtn orange" data-tab="plan">Plan de Recuperación</button>
         </div>
 
-        {/* RIGHT */}
-        <div className="lg:col-span-2">
+        <!-- DIAGNÓSTICO -->
+        <div class="panel active" id="panel-diag">
+          <div class="diaggrid" style="margin-top:14px;">
+            <div class="card shadow good box">
+              <h3 class="boxtitle good">✅ Lo que se hizo bien</h3>
+              <ul>
+                <li>Persistencia progresiva sin agresividad (valor → dolores → prueba social).</li>
+                <li>El lead respondió con intención clara: retomar en enero.</li>
+                <li>Juliana confirmó el acuerdo y cerró con tono positivo.</li>
+              </ul>
+            </div>
 
-          {/* TABS */}
-          <div className="bg-white p-1 rounded-xl border inline-flex mb-6">
-            {["Diagnóstico", "Timeline", "Plan de Recuperación"].map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`px-6 py-2 rounded-lg font-bold text-sm ${
-                  tab === t
-                    ? "bg-orange-500 text-white"
-                    : "text-slate-500"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
+            <div class="card shadow bad box">
+              <h3 class="boxtitle bad">⚠️ Puntos a mejorar</h3>
+              <ul>
+                <li>No quedó una fecha tentativamente propuesta (día/semana) para enero.</li>
+                <li>Faltó anclar un caso/beneficio específico para salud (conversión, eficiencia, CX paciente).</li>
+              </ul>
+            </div>
           </div>
 
-          {/* PLAN */}
-          {tab === "Plan de Recuperación" && (
-            <>
-              {/* OBJETIVO */}
-              <div className="bg-orange-50 border border-orange-200 p-6 rounded-2xl mb-6">
-                <h3 className="font-bold text-orange-900 flex items-center gap-2 mb-1">
-                  <Send className="w-5 h-5" />
-                  Estrategia de recuperación
-                </h3>
-                <p className="text-sm text-orange-800">
-                  Objetivo: retomar contacto respetando timing y activar
-                  conversación en enero.
-                </p>
-              </div>
+          <div class="conclusion card shadow">
+            <h3>Conclusión del analista</h3>
+            Thiago es un IQL <strong>activo</strong> con cierre <strong>diferido por timing</strong>. La oportunidad está viva y acordada:
+            la clave es retomar en enero con un mensaje breve, concreto y con CTA liviano (15 min).
+          </div>
+        </div>
 
-              <BilingualBlock
-                title="Opción 1 – Retoma directa"
-                recommended
-                pt={`Oi Thiago! 😊
+        <!-- TIMELINE -->
+        <div class="panel" id="panel-time" style="margin-top:14px;">
+          <div class="card shadow timeline">
+            <h3 style="margin:0 0 10px;font-size:14px;font-weight:900;">Historial de conversación</h3>
+
+            <div class="titem">
+              <div class="tdate">28 Nov – 09:35</div>
+              <div class="tbox">
+                <strong>Conexión inicial</strong>
+                Solicitud de conexión y presentación breve.
+              </div>
+            </div>
+
+            <div class="titem">
+              <div class="tdate">29 Nov – 10:00</div>
+              <div class="tbox">
+                <strong>Mensaje de valor</strong>
+                Velocidad de respuesta, escalabilidad y costos.
+              </div>
+            </div>
+
+            <div class="titem">
+              <div class="tdate">02 Dic – 10:21</div>
+              <div class="tbox">
+                <strong>Follow-up (dolores)</strong>
+                Calidad, velocidad y abandono.
+              </div>
+            </div>
+
+            <div class="titem">
+              <div class="tdate">05 Dic – 10:34</div>
+              <div class="tbox">
+                <strong>Prueba social</strong>
+                Casos WhatsApp (Movistar/Pax).
+              </div>
+            </div>
+
+            <div class="titem">
+              <div class="tdate">07 Dic – 10:51</div>
+              <div class="tbox warn">
+                <strong>Cierre sin presión</strong>
+                “Prometo que es mi última mensagem ;)”
+              </div>
+            </div>
+
+            <div class="titem">
+              <div class="tdate">09 Dic – 20:48</div>
+              <div class="tbox ok">
+                <strong>Respuesta del lead (IQL)</strong>
+                “Podemos falar em janeiro? Você me manda msg e retomamos?”
+              </div>
+            </div>
+
+            <div class="titem">
+              <div class="tdate">10 Dic – 15:35</div>
+              <div class="tbox ok">
+                <strong>Confirmación</strong>
+                Juliana acuerda retomar en enero.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLAN -->
+        <div class="panel" id="panel-plan" style="margin-top:14px;">
+          <div class="action-top shadow">
+            <h3><span class="icon orange">✉️</span> Estrategia de retoma (Enero)</h3>
+            <p>Objetivo: respetar timing + reactivar con CTA liviano (15 min) orientado a Growth/Performance.</p>
+          </div>
+
+          <!-- OPCIÓN 1 -->
+          <div class="msg reco shadow">
+            <div class="msghead">
+              <div class="msgtitle">Opción 1: Retoma directa (RECOMENDADA)</div>
+              <div class="tag">Recomendada</div>
+            </div>
+
+            <div class="msggrid">
+              <div class="cell pt">
+                <div class="celltop">
+                  <div class="label"><span class="icon teal">🌐</span> Portugués (Enviar)</div>
+                  <button class="copybtn" data-copy="pt1"><span class="icon">📋</span> Copiar</button>
+                </div>
+                <div class="code" id="pt1">Oi Thiago! 😊
+
 Conforme combinamos em dezembro, estou retomando nossa conversa agora em janeiro.
+Espero que tenha começado bem o ano por aí.
 
-Se fizer sentido, podemos marcar um papo rápido (15 min) para trocar ideias sobre performance e experiência digital.
+Se fizer sentido, podemos marcar um papo rápido (15 min) para trocar ideias sobre performance e experiência digital no contexto de saúde.
 
-Fico à disposição!`}
-                es={`Hola Thiago 😊
-Tal como quedamos en diciembre, retomo ahora la conversación en enero.
+Tenho dois horários curtos:
+• Terça – 10h
+• Quinta – 15h
 
-Si te parece, podemos agendar una charla breve (15 min) para intercambiar ideas.`}
-              />
+Algum deles funciona para você?</div>
+              </div>
 
-              <BilingualBlock
-                title="Opción 2 – Enfoque Growth"
-                pt={`Thiago, aproveitando seu papel em Growth no Einstein:
+              <div class="cell es">
+                <div class="celltop">
+                  <div class="label es"><span class="icon">💬</span> Español (Ref)</div>
+                  <div style="width:90px"></div>
+                </div>
+                <div class="esref">Hola Thiago 😊
 
-Temos ajudado organizações de saúde a melhorar conversão e eficiência digital.
+Tal como quedamos en diciembre, retomo la conversación ahora en enero.
+Espero que hayas comenzado muy bien el año.
 
-Se achar relevante, fico à disposição para trocar ideias.`}
-                es={`Thiago, aprovechando tu rol en Growth:
+Si te parece, agendamos una charla breve (15 min) para intercambiar ideas sobre performance y experiencia digital en salud.
 
-Apoyamos organizaciones de salud a mejorar conversión y eficiencia digital.
+Te propongo dos horarios:
+• Martes – 10h
+• Jueves – 15h
 
-Si lo ves relevante, conversamos.`}
-              />
-            </>
-          )}
+¿Alguno te funciona?</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- OPCIÓN 2 -->
+          <div class="msg shadow">
+            <div class="msghead">
+              <div class="msgtitle">Opción 2: Enfoque Growth / Performance</div>
+              <div style="width:90px"></div>
+            </div>
+
+            <div class="msggrid">
+              <div class="cell pt">
+                <div class="celltop">
+                  <div class="label"><span class="icon teal">📈</span> Portugués (Enviar)</div>
+                  <button class="copybtn" data-copy="pt2"><span class="icon">📋</span> Copiar</button>
+                </div>
+                <div class="code" id="pt2">Thiago, aproveitando seu papel em Growth no Einstein:
+
+Temos apoiado organizações de saúde a melhorar conversão nos canais digitais e reduzir fricções no atendimento, com um modelo conversacional (IA + humanos) integrado a WhatsApp e CRM.
+
+Se achar relevante, posso te mostrar 2 exemplos em 15 minutos.
+
+Prefere terça 10h ou quinta 15h?</div>
+              </div>
+
+              <div class="cell es">
+                <div class="celltop">
+                  <div class="label es"><span class="icon">💬</span> Español (Ref)</div>
+                  <div style="width:90px"></div>
+                </div>
+                <div class="esref">Thiago, aprovechando tu rol en Growth en Einstein:
+
+Estamos apoyando organizaciones de salud a mejorar conversión en canales digitales y reducir fricciones en la atención, con un modelo conversacional (IA + humanos) integrado a WhatsApp y CRM.
+
+Si lo ves relevante, puedo mostrarte 2 ejemplos en 15 minutos.
+
+¿Te va mejor martes 10h o jueves 15h?</div>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
+
+      </section>
     </div>
-  );
-}
+  </main>
+
+  <div class="toast" id="toast">Copiado ✅</div>
+
+  <script>
+    // Tabs
+    const btns = document.querySelectorAll("[data-tab]");
+    const panels = {
+      diag: document.getElementById("panel-diag"),
+      time: document.getElementById("panel-time"),
+      plan: document.getElementById("panel-plan"),
+    };
+
+    btns.forEach(b => {
+      b.addEventListener("click", () => {
+        btns.forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+
+        Object.values(panels).forEach(p => p.classList.remove("active"));
+        panels[b.dataset.tab].classList.add("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
+    // Copy + Toast
+    const toast = document.getElementById("toast");
+    const showToast = () => {
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 900);
+    };
+
+    document.querySelectorAll("[data-copy]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-copy");
+        const el = document.getElementById(id);
+        const text = el ? el.innerText : "";
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast();
+        } catch (e) {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+          showToast();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
